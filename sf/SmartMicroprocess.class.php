@@ -527,7 +527,7 @@ class SmartMicroprocess extends Database {
          foreach ($result as $key => $value) {
 
             if ($value["paramTypeData"] == 'file') {
-               print_r($value["paramTypeData"]);
+               //print_r($value["paramTypeData"]);
                $this->uploadFile($value['paramName']);
             }
             if ($value["paramTypeData"] == "multiarray" && isset($value["microprocessInputId"])) {
