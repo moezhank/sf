@@ -177,8 +177,10 @@ class ErrorMessage {
 
          $args = array();
 
-         foreach ($tabs as $value) {
-            $s .= ($html) ? ' &nbsp; ' : "\t";
+         if ((object) $tabs === $tabs) {
+            foreach ($tabs as $value) {
+               $s .= ($html) ? ' &nbsp; ' : "\t";
+            }
          }
 
          $tabs -= 1;
