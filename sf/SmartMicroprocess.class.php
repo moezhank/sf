@@ -422,6 +422,12 @@ class SmartMicroprocess extends Database {
          $this->output(ResultMessage::Instance()->requestSuccess(array("salt" => Security::instance()->getSalt())), array("message" => "Request Salt Success"));
          break;
       case 'login':
+         if (!isset($this->paramsWithValue["username"])) {
+            $this->paramsWithValue["username"] = "";
+         }
+         if (!isset($this->paramsWithValue["password"])) {
+            $this->paramsWithValue["password"] = "";
+         }
          if (Security::instance()->checkLogin($this->paramsWithValue["username"], $this->paramsWithValue["password"], true)) {
             $this->output(ResultMessage::Instance()->saveDataSuccess(new stdClass, array("message" => "Login Success")));
          } else {

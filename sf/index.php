@@ -427,18 +427,12 @@ class Database {
    }
 
    protected function open($sql, $arr_data) {
-      //$arr_data = $this->htmlClean($arr_data);
       $sql = $this->getParsedSql($sql, $arr_data);
 
       return $this->dbConnect->mySqlOpen($sql);
    }
 
    protected function execute($sql, $arr_data, $clearStatus = true) {
-
-      if ($clearStatus) {
-         //$arr_data = $this->htmlClean($arr_data);
-      }
-
       $sql    = $this->getParsedSql($sql, $arr_data);
       $result = $this->dbConnect->mySqlExec($sql);
 
@@ -632,14 +626,6 @@ class Security extends Database {
       }
 
       return $this->open($this->mSqlQueries['get_module_action'], array($module, $groupId));
-   }
-
-   public function htmlClean($arrData) {
-      $arrResult = array();
-      foreach ($arrData as $value) {
-         $arrResult[] = htmlentities($value, ENT_QUOTES);
-      }
-      return $arrResult;
    }
 
    public static function init() {
