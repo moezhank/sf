@@ -325,7 +325,7 @@ class SmartMicroprocess extends Database {
          ResultMessage::Instance()->dataNotComplete(new stdClass, array("message" => "Upload Directory Not Found"));
       }
 
-      $this->paramsWithValue[$name] = sha1_file($_FILES[$name]['tmp_name']) . '.' . $ext;
+      $this->paramsWithValue[$name] = $this->paramsWithValue["systemUserId"] . "_" . sha1_file($_FILES[$name]['tmp_name']) . '.' . $ext;
 
       //echo $this->uploadPath;exit;
 
