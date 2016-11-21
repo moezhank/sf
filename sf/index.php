@@ -409,14 +409,18 @@ class Database {
       return $sql_parsed;
    }
 
+   protected function cleanupXXS($var) {
+      return preg_replace('#<script(.*?)>(.*?)</script>#is', '', $var);
+   }
+
    protected function getParsedSqlHelper($value) {
       if (!isset($value)) {
          return 'NULL';
       } else {
          if ((string) $value === $value || (object) $value === $value) {
-            return '\'' . mysqli_escape_string($this->dbConnect->getConnection(), trim($value)) . '\'';
+            return '\'' . mysqli_escape_string($this->dbConnect->getConnection(), trim($this->cleanupXXS($value))) . '\'';
          } else {
-            return mysqli_escape_string($this->dbConnect->getConnection(), $value);
+            return mysqli_escape_string($this->dbConnect->getConnection(), $this->cleanupXXS($value));
          }
 
       }
