@@ -3,7 +3,7 @@ $cfg['dbtype'] = "mysql"; //mysql, pgsql
 $cfg['dbhost'] = "127.0.0.1";
 $cfg['dbuser'] = "root";
 $cfg['dbpass'] = "";
-$cfg['dbname'] = "tantraz";
+$cfg['dbname'] = "";
 $cfg['dbport'] = "3306";
 
 //Application Configuration
