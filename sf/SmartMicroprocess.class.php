@@ -26,6 +26,7 @@ class SmartMicroprocess extends Database {
    private $email_password;
    private $email_smtp_port;
    private $email_secure_type;
+   private $nextProcess = "";
 
    private function setQuery() {
       $this->mSqlQueries["get_microprocess_by_code"] = "
@@ -183,6 +184,10 @@ class SmartMicroprocess extends Database {
       $this->setDefaultUser();
       if (Config::instance()->getValue("upload_path") !== null) {
          $this->uploadPath = Config::instance()->getValue("upload_path");
+      }
+
+      if (Config::instance()->getValue("next_process") !== null) {
+         $this->nextProcess = Config::instance()->getValue("next_process");
       }
 
       if (Config::instance()->getValue("image_resize") !== null) {
@@ -429,7 +434,12 @@ class SmartMicroprocess extends Database {
             $this->paramsWithValue["password"] = "";
          }
          if (Security::instance()->checkLogin($this->paramsWithValue["username"], $this->paramsWithValue["password"], true)) {
-            $this->output(ResultMessage::Instance()->saveDataSuccess(new stdClass, array("message" => "Login Success")));
+            if ($this->nextProcess == "") {
+               $this->output(ResultMessage::Instance()->saveDataSuccess(new stdClass, array("message" => "Login Success")));
+            } else {
+               $service = $this->nextProcess;
+            }
+
          } else {
             $this->output(ResultMessage::Instance()->saveDataFailed(new stdClass, array("message" => "Login Failed")));
          }
