@@ -552,7 +552,14 @@ class SmartMicroprocess extends Database {
                foreach ($this->paramsWithValue[$value["paramName"]] as $keyDetail => $valueDetail) {
                   foreach ($paramsChild as $keyParam => $valueParam) {
                      if ($valueParam["paramAllowNull"] == "no" && (!isset($valueDetail[$valueParam["paramName"]]) || $valueDetail[$valueParam["paramName"]] == "")) {
-                        $this->output(ResultMessage::Instance()->dataNotComplete(array("data_not_complete" => $valueParam, "data" => $keyDetail)), array("message" => "Data Not Complete"));
+
+                        if ($this->development) {
+                           $data = array("data_not_complete" => $valueParam, "data" => $keyDetail);
+                        } else {
+                           $data = array();
+                        }
+
+                        $this->output(ResultMessage::Instance()->dataNotComplete($data, array("message" => "Data Not Complete")));
                      }
                      if ($valueParam['paramAllowNull'] == 'yes' && !isset($valueDetail[$valueParam['paramName']])) {
                         $valueDetail[$valueParam['paramName']] = '';
@@ -564,7 +571,14 @@ class SmartMicroprocess extends Database {
                   unset($params_child);
                }
             } elseif ($value["paramAllowNull"] == "no" && (empty($this->paramsWithValue[$value["paramName"]]) || (!isset($this->paramsWithValue[$value["paramName"]]) || $this->paramsWithValue[$value["paramName"]] == ""))) {
-               $this->output(ResultMessage::Instance()->dataNotComplete(array("data_not_complete" => $value, array("message" => "Data Not Complete"))));
+
+               if ($this->development) {
+                  $data = array("data_not_complete" => $valueParam, "data" => $keyDetail);
+               } else {
+                  $data = array();
+               }
+
+               $this->output(ResultMessage::Instance()->dataNotComplete($data, array("message" => "Data Not Complete")));
             } else {
                if ($value['paramAllowNull'] == 'yes' && isset($this->paramsWithValue[$value['paramName']])) {
                   $paramsWithValue = $this->paramsWithValue[$value['paramName']];
@@ -616,7 +630,12 @@ class SmartMicroprocess extends Database {
          return true;
       } else {
          $this->rollback();
-         $this->output(ResultMessage::Instance()->saveDataFailed(array("message" => array("process" => $data, "result" => $result)), array("message" => "Process Failed")));
+         if ($this->development) {
+            $data = array("process" => $data, "result" => $result);
+         } else {
+            $data = array();
+         }
+         $this->output(ResultMessage::Instance()->saveDataFailed($data, array("message" => "Process Failed")));
       }
    }
 
