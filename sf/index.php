@@ -224,7 +224,7 @@ class ErrorMessage {
          $s .= '</pre>';
       }
 
-      print $s;
+     // print $s;
 
       return $s;
    }
@@ -323,7 +323,7 @@ class MjConn extends ErrorMessage {
          if ($this->mDebug) {
             //self::output('[ MySqli ] - ' . $this->mLink->errno . ' : ' . $this->mLink->error);
             SysLog::getInstance()->setLog("database", '[ MySqli ] - ' . $this->mLink->errno . ' : ' . $this->mLink->error);
-            $this->Backtrace();
+            //$this->Backtrace();
          }
       }
 
@@ -345,7 +345,7 @@ class MjConn extends ErrorMessage {
          if ($this->mDebug) {
             //self::output('[ MySqli ] - ' . $this->mLink->errno . ' : ' . $this->mLink->error);
             SysLog::getInstance()->setLog("database", '[ MySqli ] - ' . $this->mLink->errno . ' : ' . $this->mLink->error);
-            $this->Backtrace();
+            //$this->Backtrace();
          }
          return false;
       } else {
