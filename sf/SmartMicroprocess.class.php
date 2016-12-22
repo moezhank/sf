@@ -554,7 +554,7 @@ class SmartMicroprocess extends Database {
                      if ($valueParam["paramAllowNull"] == "no" && (!isset($valueDetail[$valueParam["paramName"]]) || $valueDetail[$valueParam["paramName"]] == "")) {
 
                         if ($this->development) {
-                           $data = array("data_not_complete" => $valueParam, "data" => $keyDetail);
+                           $data = array("Data Not Complete" => $valueParam, "data" => $keyDetail);
                         } else {
                            $data = array();
                         }
@@ -573,7 +573,7 @@ class SmartMicroprocess extends Database {
             } elseif ($value["paramAllowNull"] == "no" && (empty($this->paramsWithValue[$value["paramName"]]) || (!isset($this->paramsWithValue[$value["paramName"]]) || $this->paramsWithValue[$value["paramName"]] == ""))) {
 
                if ($this->development) {
-                  $data = array("data_not_complete" => $valueParam, "data" => $keyDetail);
+                  $data = array("Data Not Complete" =>$value["paramName"]);
                } else {
                   $data = array();
                }
@@ -774,10 +774,10 @@ class SmartMicroprocess extends Database {
 
    private function childJoin($arrayFirst, $arraySecond, $resultKey, $keyField, $foreignKey) {
       if (!array_key_exists($keyField, $arrayFirst[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $keyField), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $keyField), array("message" => "Data Not Complete")));
       }
       if (!array_key_exists($foreignKey, $arraySecond[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $foreignKey), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $foreignKey), array("message" => "Data Not Complete")));
       }
       foreach ($arrayFirst as $firstKey => $firstValue) {
          foreach ($arraySecond as $secondKey => $secondValue) {
@@ -794,10 +794,10 @@ class SmartMicroprocess extends Database {
 
    private function innerJoin($arrayFirst, $arraySecond, $resultKey, $keyField, $foreignKey) {
       if (!array_key_exists($keyField, $arrayFirst[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $keyField), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $keyField), array("message" => "Data Not Complete")));
       }
       if (!array_key_exists($foreignKey, $arraySecond[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $foreignKey), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $foreignKey), array("message" => "Data Not Complete")));
       }
       $number = 0;
       foreach ($arrayFirst as $firstKey => $firstValue) {
@@ -816,10 +816,10 @@ class SmartMicroprocess extends Database {
 
    private function sideJoin($arrayFirst, $arraySecond, $resultKey, $keyField, $foreignKey) {
       if (!array_key_exists($keyField, $arrayFirst[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $keyField), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $keyField), array("message" => "Data Not Complete")));
       }
       if (!array_key_exists($foreignKey, $arraySecond[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $foreignKey), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $foreignKey), array("message" => "Data Not Complete")));
       }
       $number = 0;
       foreach ($arraySecond[0] as $key => $value) {
@@ -847,10 +847,10 @@ class SmartMicroprocess extends Database {
 
    private function outerJoin($arrayFirst, $arraySecond, $resultKey, $keyField, $foreignKey, $outerSide = null) {
       if (!array_key_exists($keyField, $arrayFirst[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $keyField), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $keyField), array("message" => "Data Not Complete")));
       }
       if (!array_key_exists($foreignKey, $arraySecond[0])) {
-         $this->output(ResultMessage::Instance()->dataNotComplete(array('data_not_complete' => $foreignKey), array("message" => "Data Not Complete")));
+         $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $foreignKey), array("message" => "Data Not Complete")));
       }
       $number = 0;
       if ($outerSide == 'left' || $outerSide == null) {
