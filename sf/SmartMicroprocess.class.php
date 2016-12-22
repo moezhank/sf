@@ -703,7 +703,7 @@ class SmartMicroprocess extends Database {
 
          $checkData = array_values($param);
 
-         if ((array) $checkData[0] === $checkData[0]) {
+         if (!empty($checkData) && (array) $checkData[0] === $checkData[0]) {
             foreach ($param as $key => $value) {
                $this->execData($value, $data);
             }
