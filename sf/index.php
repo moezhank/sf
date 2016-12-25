@@ -19,6 +19,14 @@ if (!defined("DEVELOPMENT")) {
    define('DEVELOPMENT', false);
 }
 
+if (DEVELOPMENT) {
+   ini_set("display_errors", "1");
+   error_reporting(E_ALL);
+} else {
+   ini_set("display_errors", "0");
+   error_reporting(0);
+}
+
 class Config {
    private $mCfg = array();
    public static $mrInstance;
@@ -224,7 +232,7 @@ class ErrorMessage {
          $s .= '</pre>';
       }
 
-     // print $s;
+      // print $s;
 
       return $s;
    }

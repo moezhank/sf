@@ -9,6 +9,7 @@ class SmartReadFile {
    }
 
    public function readFile($location, $filename, $mimeType = 'application/octet-stream') {
+      $filename = str_replace("../","",$filename);
 
       #die($location);
       if (!file_exists($location)) {
