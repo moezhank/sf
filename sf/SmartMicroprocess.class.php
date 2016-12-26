@@ -26,7 +26,8 @@ class SmartMicroprocess extends Database {
    private $email_password;
    private $email_smtp_port;
    private $email_secure_type;
-   private $nextProcess = "";
+   private $nextProcess        = "";
+   private $dataTables;
 
    private function setQuery() {
       $this->mSqlQueries["get_microprocess_by_code"] = "
@@ -208,14 +209,21 @@ class SmartMicroprocess extends Database {
    }
 
    private function setDefaultPagingValue() {
-      $this->paramsWithValue["systemPagingLimit"] = (integer) Config::instance()->getValue("limit") == null ? 20 : (integer) Config::instance()->getValue("limit");
-      if (empty($this->paramsWithValue["systemPage"])) {
-         $this->paramsWithValue["systemPage"] = 1;
+      if (isset($_REQUEST['draw'])) {
+         $this->dataTables["draw"]                   = $_REQUEST['draw'];
+         $this->paramsWithValue["systemPagingLimit"] = (integer) (($_REQUEST['length'] > 100) ? 100 : $_REQUEST['length'])*1;
+         $this->paramsWithValue["systemPagingStart"] = (integer) $_REQUEST['start'];
+         $this->paramsWithValue["systemSearch"] = $_REQUEST["search"]["value"];
+      } else {
+         $this->paramsWithValue["systemPagingLimit"] = (integer) Config::instance()->getValue("limit") == null ? 20 : (integer) Config::instance()->getValue("limit");
+         if (empty($this->paramsWithValue["systemPage"])) {
+            $this->paramsWithValue["systemPage"] = 1;
+         }
+         if ($this->paramsWithValue["systemPage"] < 0) {
+            $this->paramsWithValue["systemPage"] = 1;
+         }
+         $this->paramsWithValue["systemPagingStart"] = (integer) (($this->paramsWithValue["systemPage"] - 1) * (integer) $this->paramsWithValue["systemPagingLimit"]);
       }
-      if ($this->paramsWithValue["systemPage"] < 0) {
-         $this->paramsWithValue["systemPage"] = 1;
-      }
-      $this->paramsWithValue["systemPagingStart"] = (integer) (($this->paramsWithValue["systemPage"] - 1) * (integer) $this->paramsWithValue["systemPagingLimit"]);
 
    }
 
@@ -315,6 +323,7 @@ class SmartMicroprocess extends Database {
       }
 
       $finfo = new finfo(FILEINFO_MIME_TYPE);
+      //print_r($_FILES);
       if (false === $ext = array_search(
          $finfo->file($_FILES[$name]['tmp_name']),
          array(
@@ -573,7 +582,7 @@ class SmartMicroprocess extends Database {
             } elseif ($value["paramAllowNull"] == "no" && (empty($this->paramsWithValue[$value["paramName"]]) || (!isset($this->paramsWithValue[$value["paramName"]]) || $this->paramsWithValue[$value["paramName"]] == ""))) {
 
                if ($this->development) {
-                  $data = array("Data Not Complete" =>$value["paramName"]);
+                  $data = array("Data Not Complete" => $value["paramName"]);
                } else {
                   $data = array();
                }
@@ -915,6 +924,16 @@ class SmartMicroprocess extends Database {
          $this->processList[]         = array("process" => "Final", "params" => $this->paramsWithValue, "benchmark" => $this->getBenchmark(), "database", SysLog::getInstance()->getLog("database"));
          $this->resultData["process"] = $this->processList;
       };
+      if(isset($this->dataTables["draw"])){
+         //print_r($this->paramsWithValue);
+         $this->resultData["draw"] = $this->dataTables["draw"];
+         if(isset($this->paramsWithValue["recordsTotal"])){
+            $this->resultData["recordsTotal"] = $this->paramsWithValue["recordsTotal"];
+         }
+         if(isset($this->paramsWithValue["recordsFiltered"])){
+            $this->resultData["recordsFiltered"] = $this->paramsWithValue["recordsFiltered"];
+         }
+      }
       echo json_encode(array($this->resultMessage => $this->resultData));
 
    }
