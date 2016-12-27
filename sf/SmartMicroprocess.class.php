@@ -26,8 +26,9 @@ class SmartMicroprocess extends Database {
    private $email_password;
    private $email_smtp_port;
    private $email_secure_type;
-   private $nextProcess        = "";
+   private $nextProcess = "";
    private $dataTables;
+   private $destruct = true;
 
    private function setQuery() {
       $this->mSqlQueries["get_microprocess_by_code"] = "
@@ -211,9 +212,9 @@ class SmartMicroprocess extends Database {
    private function setDefaultPagingValue() {
       if (isset($_REQUEST['draw'])) {
          $this->dataTables["draw"]                   = $_REQUEST['draw'];
-         $this->paramsWithValue["systemPagingLimit"] = (integer) (($_REQUEST['length'] > 100) ? 100 : $_REQUEST['length'])*1;
+         $this->paramsWithValue["systemPagingLimit"] = (integer) (($_REQUEST['length'] > 100) ? 100 : $_REQUEST['length']) * 1;
          $this->paramsWithValue["systemPagingStart"] = (integer) $_REQUEST['start'];
-         $this->paramsWithValue["systemSearch"] = $_REQUEST["search"]["value"];
+         $this->paramsWithValue["systemSearch"]      = $_REQUEST["search"]["value"];
       } else {
          $this->paramsWithValue["systemPagingLimit"] = (integer) Config::instance()->getValue("limit") == null ? 20 : (integer) Config::instance()->getValue("limit");
          if (empty($this->paramsWithValue["systemPage"])) {
@@ -227,12 +228,44 @@ class SmartMicroprocess extends Database {
 
    }
 
+   private function runStream($params, $data) {
+      $this->destruct = false;
+      require_once Config::instance()->getValue("docroot") . 'lib/smartRead/smartReadFile.class.php';
+      echo SmartReadFile::getInstance()->getReadFile($this->uploadPath . $params[0], $params[0]);
+      exit;
+   }
+
+   private function runParseTemplate($params, $data) {
+      if (file_exists(Config::instance()->getValue("docroot") . 'lib/mustache/src/Mustache/Autoloader.php')) {
+         require_once Config::instance()->getValue("docroot") . 'lib/mustache/src/Mustache/Autoloader.php';
+      } elseif (file_exists(Config::instance()->getValue("docroot") . 'vendor/mustache/mustache/src/Mustache/Autoloader.php')) {
+         require_once Config::instance()->getValue("docroot") . 'vendor/mustache/mustache/src/Mustache/Autoloader.php';
+      } else {
+         $this->output(ResultMessage::Instance()->systemError(new stdClass, array("message" => "Need Lib Mustache PHP Via composer, or clone into lib/mustache")));
+      }
+
+
+
+      $paramToParse[$params["0"]["paramName"]] = $this->paramsWithValue[$params["0"]["paramName"]];
+      
+      //print_r($paramToParse);
+      Mustache_Autoloader::register();
+      $mustache                                      = new Mustache_Engine;
+      $this->paramsWithValue[$data["processResult"]] = $mustache->render($data["processProcess"], $paramToParse);
+   }
+
    private function sendMail($params, $data) {
 
       if (empty($params)) {
          $params = $this->paramsWithValue;
       }
-      require_once Config::instance()->getValue("docroot") . 'lib/PHPMailer/PHPMailerAutoload.php';
+      if (file_exists(Config::instance()->getValue("docroot") . 'lib/PHPMailer/PHPMailerAutoload.php')) {
+         require_once Config::instance()->getValue("docroot") . 'lib/PHPMailer/PHPMailerAutoload.php';
+      } elseif (file_exists(Config::instance()->getValue("docroot") . 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php')) {
+         require_once Config::instance()->getValue("docroot") . 'vendor/phpmailer/phpmailer/PHPMailerAutoload.php';
+      } else {
+         $this->output(ResultMessage::Instance()->systemError(new stdClass, array("message" => "Need Lib PHPMailer Via composer, or clone into lib/PHPMailer")));
+      }
       $mail = new PHPMailer;
       $mail->setFrom($params["systemMailFromEmail"], $params["systemMailFromName"]);
 
@@ -395,7 +428,15 @@ class SmartMicroprocess extends Database {
             break;
          case 'merge':
             $params = $this->checkParams($resultParam);
-            $this->mergeSource($params, $value);
+            $this->runMergeSource($params, $value);
+            break;
+         case 'template':
+            //$params = $this->checkParams($resultParam);
+            $this->runParseTemplate($resultParam, $value);
+            break;
+         case 'stream':
+            $params = $this->checkParams($resultParam);
+            $this->runStream($params, $value);
             break;
          default:
             if (!empty($resultParam)) {
@@ -504,10 +545,7 @@ class SmartMicroprocess extends Database {
       }
    }
 
-   private function mergeSource($values, $string) {
-      //die('test');
-      //print_r($values);
-      //echo $string["processProcess"];
+   private function runMergeSource($values, $string) {
       $this->paramsWithValue[$string["processResult"]] = vsprintf($string["processProcess"], $values);
    }
 
@@ -924,17 +962,19 @@ class SmartMicroprocess extends Database {
          $this->processList[]         = array("process" => "Final", "params" => $this->paramsWithValue, "benchmark" => $this->getBenchmark(), "database", SysLog::getInstance()->getLog("database"));
          $this->resultData["process"] = $this->processList;
       };
-      if(isset($this->dataTables["draw"])){
+      if (isset($this->dataTables["draw"])) {
          //print_r($this->paramsWithValue);
          $this->resultData["draw"] = $this->dataTables["draw"];
-         if(isset($this->paramsWithValue["recordsTotal"])){
+         if (isset($this->paramsWithValue["recordsTotal"])) {
             $this->resultData["recordsTotal"] = $this->paramsWithValue["recordsTotal"];
          }
-         if(isset($this->paramsWithValue["recordsFiltered"])){
+         if (isset($this->paramsWithValue["recordsFiltered"])) {
             $this->resultData["recordsFiltered"] = $this->paramsWithValue["recordsFiltered"];
          }
       }
-      echo json_encode(array($this->resultMessage => $this->resultData));
+      if ($this->destruct) {
+         echo json_encode(array($this->resultMessage => $this->resultData));
+      }
 
    }
 }

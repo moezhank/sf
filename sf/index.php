@@ -798,6 +798,11 @@ class MessageResult {
    public function urlNotFound($data = '', $extData = array()) {
       return $this->urlTidakTersedia($data, $extData);
    }
+
+   public function systemError($data = '', $extData = array()) {
+      $status = '500';
+      return $this->formatMessage($status, $data, $extData);
+   }
 }
 MessageResult::init();
 

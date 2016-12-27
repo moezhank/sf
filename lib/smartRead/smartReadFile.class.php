@@ -8,7 +8,7 @@ class SmartReadFile {
 
    }
 
-   public function readFile($location, $filename, $mimeType = 'application/octet-stream') {
+   public function getReadFile($location, $filename, $mimeType = 'application/octet-stream') {
       $filename = str_replace("../","",$filename);
 
       #die($location);
@@ -67,7 +67,7 @@ class SmartReadFile {
       }
    }
 
-   static function Instance() {
+   static function getInstance() {
 
       if (!isset(self::$mrInstance)) {
          self::$mrInstance = new SmartReadFile();

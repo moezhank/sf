@@ -1,0 +1,6 @@
+{
+   "require": {
+      "phpmailer/phpmailer": "5.2.19",
+      "mustache/mustache": "2.11.0"
+   }
+}
