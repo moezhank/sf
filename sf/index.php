@@ -565,7 +565,7 @@ class Security extends Database {
       //$this->setDebugOn();
 
       if (!isset($_SESSION["is_login"])) {
-         $cookie = isset($_COOKIE[Config::instance()->getValue('session_name')]) ? $_COOKIE[Config::instance()->getValue('session_name')] : "";
+         $cookie = isset($_COOKIE[Config::instance()->getValue('session_name')]) ? $_COOKIE[Config::instance()->getValue('session_name')] : "no-cookie";
          $result = $this->open($this->mSqlQueries['check_user_by_session_id'], array($cookie));
          if (!empty($result)) {
             Session::instance()->restart();
