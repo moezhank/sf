@@ -269,6 +269,8 @@ class SmartMicroprocess extends Database {
       $mail = new PHPMailer;
       $mail->setFrom($params["systemMailFromEmail"], $params["systemMailFromName"]);
 
+//      $mail->SMTPDebug = 3;
+
       $mail->isSMTP();
       $mail->Host       = $this->email_smtp;
       $mail->SMTPAuth   = true;
