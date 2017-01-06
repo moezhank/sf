@@ -1,6 +1,7 @@
 {
    "require": {
       "phpmailer/phpmailer": "5.2.19",
-      "mustache/mustache": "2.11.0"
+      "mustache/mustache": "2.11.0",
+      "firebase/php-jwt": "1.0.0"
    }
 }
