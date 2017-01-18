@@ -554,11 +554,12 @@ class SmartMicroprocess extends Database {
 
    private function sendOutputArray($service) {
       $resultParam = $this->getOuputParams($service);
+      //print_r($resultParam);
       $empty       = false;
       $params      = "";
       //$params      = $this->checkParams($resultParam, true);
       foreach ($resultParam as $key => $value) {
-         if (empty($this->paramsWithValue[$value["paramName"]])) {
+         if (empty($this->paramsWithValue[$value["paramName"]]) && $value["paramAllowNull"]=="no") {
             $empty = true;
          } else {
             $params[$value["paramName"]] = $this->paramsWithValue[$value["paramName"]];
@@ -566,7 +567,7 @@ class SmartMicroprocess extends Database {
       }
 
       if ($empty && $this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
-         // die("trap here");
+         //die("trap here");
          $this->output(ResultMessage::Instance()->dataNotFound(new stdClass, array("message" => "Data Not Found")));
       } elseif ($this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
          $this->output(ResultMessage::Instance()->requestSuccess($params, array("message" => "Request Success")));
@@ -831,6 +832,7 @@ class SmartMicroprocess extends Database {
 
    private function childJoin($arrayFirst, $arraySecond, $resultKey, $keyField, $foreignKey) {
       if (!array_key_exists($keyField, $arrayFirst[0])) {
+         //die('test');
          $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $keyField), array("message" => "Data Not Complete")));
       }
       if (!array_key_exists($foreignKey, $arraySecond[0])) {

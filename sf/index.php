@@ -98,6 +98,39 @@ Config::instance()->load(Config::instance()->getDocRoot() . 'cfg/cfg.inc.php');
 // Load Composer
 #require_once Config::instance()->getValue('docroot') . 'sf/vendor/autoload.php';
 
+class SessionData {
+   private static $instance;
+   private $data;
+
+   public function setData($key, $value) {
+      $this->$data[$key] = $value;
+   }
+
+   public function getData($key) {
+      if (isset($this->data[$key])) {
+         return $this->data[$key];
+      }else{
+         return null;
+      }
+   }
+
+   public static function init() {
+      $class_name       = __CLASS__;
+      self::$instance = new $class_name();
+   }
+
+   public static function instance() {
+      return self::$instance;
+   }
+}
+
+SessionData::init();
+
+// Load Composer
+function loadComposer($dir = __DIR__) {
+   require_once $dir . '/vendor/autoload.php';
+}
+
 class Session {
 
    public static $mrInstance;
@@ -160,83 +193,6 @@ Session::instance()->setName(Config::instance()->getValue('session_name'));
 Session::instance()->setExpire(Config::instance()->getValue('session_expire'));
 Session::instance()->start();
 
-class ErrorMessage {
-   public function backtrace() {
-      $levels = 9999;
-      $s      = '';
-
-      $html = (isset($_SERVER['HTTP_USER_AGENT']));
-      $fmt  = ($html) ? "</font><font color=#808080 size=-1> %% line %4d, file: <a href=\"file:/%s\">%s</a></font>" : "%% line %4d, file: %s";
-
-      $MAXSTRLEN = 64;
-
-      $s = ($html) ? '<pre align=left>' : '';
-
-      $traceArr = debug_backtrace();
-
-      array_shift($traceArr);
-      $tabs = sizeof($traceArr) - 1;
-
-      foreach ($traceArr as $arr) {
-         $levels -= 1;
-         if ($levels < 0) {
-            break;
-         }
-
-         $args = array();
-
-         if ((object) $tabs === $tabs) {
-            foreach ($tabs as $value) {
-               $s .= ($html) ? ' &nbsp; ' : "\t";
-            }
-         }
-
-         $tabs -= 1;
-         if ($html) {
-            $s .= '<font face="Courier New,Courier">';
-         }
-
-         if (isset($arr['class'])) {
-            $s .= $arr['class'] . '.';
-         }
-
-         if (isset($arr['args'])) {
-            foreach ($arr['args'] as $v) {
-               if (is_null($v)) {
-                  $args[] = 'null';
-               } else if ((array) $v === $v) {
-                  $args[] = 'Array[' . sizeof($v) . ']';
-               } else if ((object) $v === $v) {
-                  $args[] = 'Object:' . get_class($v);
-               } else if ((bool) $v === $v) {
-                  $args[] = $v ? 'true' : 'false';
-               } else {
-                  $v   = (string) @$v;
-                  $str = htmlspecialchars(substr($v, 0, $MAXSTRLEN));
-                  if (strlen($v) > $MAXSTRLEN) {
-                     $str .= '...';
-                  }
-
-                  $args[] = $str;
-               }
-            }
-         }
-
-         $s .= $arr['function'] . '(' . implode(', ', $args) . ')';
-
-         $s .= @sprintf($fmt, $arr['line'], $arr['file'], basename($arr['file']));
-
-         $s .= "\n";
-      }
-      if ($html) {
-         $s .= '</pre>';
-      }
-
-      // print $s;
-
-      return $s;
-   }
-}
 class SysLog {
    private static $mrInstance;
    private $log = array();
@@ -269,7 +225,7 @@ SysLog::Init();
  * Connection use mysql
  */
 
-class MjConn extends ErrorMessage {
+class MjConn{
    private $mLink;
    private $mResult;
    private $mObject;
@@ -473,6 +429,7 @@ class Database {
    }
 }
 
+
 class Security extends Database {
    public static $mrInstance;
 
@@ -563,13 +520,14 @@ class Security extends Database {
 
    private function checkUser() {
       //$this->setDebugOn();
-
-      if (!isset($_SESSION["is_login"])) {
+      //var_dump(SessionData::instance()->getData("is_login"));
+      if (!is_null(SessionData::instance()->getData("is_login"))) {
          $cookie = isset($_COOKIE[Config::instance()->getValue('session_name')]) ? $_COOKIE[Config::instance()->getValue('session_name')] : "no-cookie";
          $result = $this->open($this->mSqlQueries['check_user_by_session_id'], array($cookie));
+
          if (!empty($result)) {
             Session::instance()->restart();
-            $_SESSION['is_login'] = true;
+            SessionData::instance()->setData('is_login',true);
             $this->setUser($result);
             $this->execute($this->mSqlQueries['update_login_key'], array(session_id(), $_SESSION["user"]["userName"]));
             //print_r(SysLog::getInstance()->getLog("database"));
