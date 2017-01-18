@@ -270,6 +270,9 @@ class SmartMicroprocess extends Database {
       $mail->setFrom($params["systemMailFromEmail"], $params["systemMailFromName"]);
 
       $mail->isSMTP();
+      if ($this->development) {
+         $mail->SMTPDebug = 3;
+      }
       $mail->Host       = $this->email_smtp;
       $mail->SMTPAuth   = true;
       $mail->Username   = $this->email_account;
@@ -682,7 +685,14 @@ class SmartMicroprocess extends Database {
          } else {
             $data = array();
          }
-         $this->output(ResultMessage::Instance()->saveDataFailed($data, array("message" => "Process Failed")));
+         $message = array("message" => "Process Failed");
+         if($data['process']['microprocessProcessFalseMessage']!=''){
+            $message = array("message" => $data['process']['microprocessProcessFalseMessage']);
+         }else{
+            $message = array("message" => "Process Failed");
+         }
+
+         $this->output(ResultMessage::Instance()->saveDataFailed($data, $message));
       }
    }
 
