@@ -266,12 +266,14 @@ class SmartMicroprocess extends Database {
       } else {
          $this->output(ResultMessage::Instance()->systemError(new stdClass, array("message" => "Need Lib PHPMailer Via composer, or clone into lib/PHPMailer")));
       }
-      $mail = new PHPMailer;
+      $mail = new PHPMailer(true);
       $mail->setFrom($params["systemMailFromEmail"], $params["systemMailFromName"]);
 
       $mail->isSMTP();
       if ($this->development) {
-         $mail->SMTPDebug = 3;
+         $mail->SMTPDebug = 4;
+      }else{
+         $mail->SMTPDebug = 0;
       }
       $mail->Host       = $this->email_smtp;
       $mail->SMTPAuth   = true;
@@ -707,10 +709,13 @@ class SmartMicroprocess extends Database {
          $joinKey    = $data["keyCode"];
 
          if (empty($result)) {
+            //die('test');
             $message = array();
             if ($data["microprocessProcessFalseMessage"] != "") {
                $message = array("message" => $data["microprocessProcessFalseMessage"]);
                $this->output(ResultMessage::Instance()->formatMessage($data["microprocessProcessFalseCode"], $result, array("message" => $data["microprocessProcessFalseMessage"])));
+            }else{
+               $this->output(ResultMessage::Instance()->dataNotFound());
             }
          }
 
