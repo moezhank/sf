@@ -558,7 +558,7 @@ class SmartMicroprocess extends Database {
       $resultParam = $this->getOuputParams($service);
       //print_r($resultParam);
       $empty       = false;
-      $params      = "";
+      $params      = array();
       //$params      = $this->checkParams($resultParam, true);
       foreach ($resultParam as $key => $value) {
          if (empty($this->paramsWithValue[$value["paramName"]]) && $value["paramAllowNull"]=="no") {
