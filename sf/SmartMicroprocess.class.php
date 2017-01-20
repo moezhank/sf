@@ -1,7 +1,6 @@
 <?php
 /**
  *   @ClassName : SmartMicroprocess
- *   @Copyright : Pt. Gamatechno Indonesia
  *   @Analyzed By : Dyan Galih Nugroho Wicaksi<dyan.galih@gmail.com>
  *   @Author By : Dyan Galih Nugroho Wicaksi<dyan.galih@gmail.com>
  *   @Version : 01
