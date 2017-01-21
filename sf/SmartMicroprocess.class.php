@@ -1003,6 +1003,9 @@ class SmartMicroprocess extends Database {
             }
         }
         if ($this->destruct) {
+            if(empty($this->resultData)){
+               $this->resultData = ResultMessage::instance()->SystemError(new stdClass, array("message"=>"System Problem Please Contact Administrator"));
+            }
             echo json_encode(array($this->resultMessage => $this->resultData));
         }
 
