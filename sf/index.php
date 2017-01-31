@@ -521,13 +521,15 @@ class Security extends Database {
    private function checkUser() {
       //$this->setDebugOn();
       //var_dump(SessionData::instance()->getData("is_login"));
-      if (!is_null(SessionData::instance()->getData("is_login"))) {
+      if (is_null($_SESSION["is_login"])) {
+         //print_r($_SESSION);
          $cookie = isset($_COOKIE[Config::instance()->getValue('session_name')]) ? $_COOKIE[Config::instance()->getValue('session_name')] : "no-cookie";
          $result = $this->open($this->mSqlQueries['check_user_by_session_id'], array($cookie));
 
          if (!empty($result)) {
             Session::instance()->restart();
-            SessionData::instance()->setData('is_login',true);
+            //SessionData::instance()->setData('is_login',true);
+            $_SESSION["is_login"] = true;
             $this->setUser($result);
             $this->execute($this->mSqlQueries['update_login_key'], array(session_id(), $_SESSION["user"]["userName"]));
             //print_r(SysLog::getInstance()->getLog("database"));
