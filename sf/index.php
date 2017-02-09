@@ -521,7 +521,7 @@ class Security extends Database {
    private function checkUser() {
       //$this->setDebugOn();
       //var_dump(SessionData::instance()->getData("is_login"));
-      if (is_null($_SESSION["is_login"])) {
+      if (isset($_SESSION["is_login"]) && is_null($_SESSION["is_login"])) {
          //print_r($_SESSION);
          $cookie = isset($_COOKIE[Config::instance()->getValue('session_name')]) ? $_COOKIE[Config::instance()->getValue('session_name')] : "no-cookie";
          $result = $this->open($this->mSqlQueries['check_user_by_session_id'], array($cookie));
