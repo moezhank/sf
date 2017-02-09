@@ -1,5 +1,5 @@
 <?php
-define(DEVELOPMENT,false);
+define(DEVELOPMENT,true);
 //require configuration
 
 /*
