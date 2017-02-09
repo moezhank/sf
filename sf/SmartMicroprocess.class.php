@@ -251,7 +251,6 @@ class SmartMicroprocess extends Database {
 
         $paramToParse[$params["0"]["paramName"]] = $this->paramsWithValue[$params["0"]["paramName"]];
 
-        //print_r($paramToParse);
         Mustache_Autoloader::register();
         $mustache                                      = new Mustache_Engine;
         $this->paramsWithValue[$data["processResult"]] = $mustache->render($data["processProcess"], $paramToParse);
@@ -297,7 +296,6 @@ class SmartMicroprocess extends Database {
 
 // Add a recipient
         $mail->addAddress($params["systemMailSentTo"]);
-//$mail->addBCC('sales@tantrazcomicbali.com');
 
         $mail->isHTML(true);
 
@@ -374,7 +372,6 @@ class SmartMicroprocess extends Database {
         }
 
         $finfo = new finfo(FILEINFO_MIME_TYPE);
-        //print_r($_FILES);
         if (false === $ext = array_search(
             $finfo->file($_FILES[$name]['tmp_name']),
             array(
@@ -387,12 +384,10 @@ class SmartMicroprocess extends Database {
             $this->output(ResultMessage::Instance()->requestNotMatch(new stdClass, array("message" => "Data Type Forbidden")));
         }
         if (!file_exists($this->uploadPath)) {
-            ResultMessage::Instance()->dataNotComplete(new stdClass, array("message" => "Upload Directory Not Found"));
+            $this->output(ResultMessage::Instance()->dataNotComplete(new stdClass, array("message" => "Upload Directory Not Found")));
         }
 
         $this->paramsWithValue[$name] = $this->paramsWithValue["systemUserId"] . "_" . sha1_file($_FILES[$name]['tmp_name']) . '.' . $ext;
-
-        //echo $this->uploadPath;exit;
 
         $newFileName = sprintf($this->uploadPath . '/%s', $this->paramsWithValue[$name]);
 
@@ -449,7 +444,6 @@ class SmartMicroprocess extends Database {
                 $this->runMergeSource($params, $value);
                 break;
             case 'template':
-                //$params = $this->checkParams($resultParam);
                 $this->runParseTemplate($resultParam, $value);
                 break;
             case 'stream':
@@ -552,7 +546,6 @@ class SmartMicroprocess extends Database {
             if ($this->microservice["process"][0]["microprocessMethod"] == "open") {
                 $this->sendOutputArray($service);
             } else {
-//exec result
                 if ($this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
                     $this->output(ResultMessage::Instance()->saveDataSuccess(new stdClass, array("message" => "Process Success")));
                 } else {
@@ -569,10 +562,8 @@ class SmartMicroprocess extends Database {
 
     private function sendOutputArray($service) {
         $resultParam = $this->getOuputParams($service);
-        //print_r($resultParam);
         $empty  = false;
         $params = "";
-        //$params      = $this->checkParams($resultParam, true);
         foreach ($resultParam as $key => $value) {
             if (empty($this->paramsWithValue[$value["paramName"]]) && $value["paramAllowNull"] == "no") {
                 $empty = true;
@@ -582,7 +573,6 @@ class SmartMicroprocess extends Database {
       }
 
       if ($empty && $this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
-         //die("trap here");
          $this->output(ResultMessage::Instance()->dataNotFound(new stdClass, array("message" => "Data Not Found")));
       } elseif ($this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
          $this->output(ResultMessage::Instance()->requestSuccess($params, array("message" => "Request Success")));
@@ -609,7 +599,6 @@ class SmartMicroprocess extends Database {
          foreach ($result as $key => $value) {
 
             if ($value["paramTypeData"] == 'file') {
-               //print_r($value["paramTypeData"]);
                $this->uploadFile($value['paramName']);
             }
             if ($value["paramTypeData"] == "multiarray" && isset($value["microprocessInputId"])) {
@@ -722,7 +711,6 @@ class SmartMicroprocess extends Database {
             $joinKey    = $data["keyCode"];
 
             if (empty($result)) {
-                //die('test');
                 $message = array();
                 if ($data["microprocessProcessFalseMessage"] != "") {
                     $message = array("message" => $data["microprocessProcessFalseMessage"]);
@@ -775,7 +763,6 @@ class SmartMicroprocess extends Database {
             }
 
         } else {
-//check array multi?
 
             $checkData = array_values($param);
 
@@ -798,7 +785,6 @@ class SmartMicroprocess extends Database {
 
         if ($data["processMethod"] == "open") {
             $this->paramsWithValue[$data["processResult"]] = $result;
-//echo json_encode($this->paramsWithValue);
         } else {
             if ($result == false) {
                 $this->rollback();
@@ -850,7 +836,6 @@ class SmartMicroprocess extends Database {
 
     private function childJoin($arrayFirst, $arraySecond, $resultKey, $keyField, $foreignKey) {
         if (!array_key_exists($keyField, $arrayFirst[0])) {
-            //die('test');
             $this->output(ResultMessage::Instance()->dataNotComplete(array('Data Not Complete' => $keyField), array("message" => "Data Not Complete")));
         }
         if (!array_key_exists($foreignKey, $arraySecond[0])) {
@@ -863,7 +848,6 @@ class SmartMicroprocess extends Database {
                 }
             }
         }
-//unset($arrayFirst);
         unset($arraySecond);
 
         return $arrayFirst;
@@ -993,7 +977,6 @@ class SmartMicroprocess extends Database {
             $this->resultData["process"] = $this->processList;
         };
         if (isset($this->dataTables["draw"])) {
-            //print_r($this->paramsWithValue);
             $this->resultData["draw"] = $this->dataTables["draw"];
             if (isset($this->paramsWithValue["recordsTotal"])) {
                 $this->resultData["recordsTotal"] = $this->paramsWithValue["recordsTotal"];
