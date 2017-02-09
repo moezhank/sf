@@ -602,9 +602,9 @@ class SmartMicroprocess extends Database {
             $debugString = "";
             if ($this->development) {
                 $this->processList[]         = array("process" => "Final", "params" => $this->paramsWithValue, "benchmark" => $this->getBenchmark(), "database", SysLog::getInstance()->getLog("database"));
-                $debugString = json_encode($this->processList);
+                $debugString = "<br /><div>".json_encode($this->processList)."</div>";
             };
-            die($outputString."<br /><div>".$debugString."</div>");
+            die($outputString.$debugString);
         }
 
     }
