@@ -37,6 +37,7 @@ class SmartMicroprocess extends Database {
          `microprocessCode`,
          `microprocessDesc`,
          `microprocessMethod`,
+         `microprocessReturn`,
          `microprocessProcessNext`,
          `microprocessProcessJumpProcess`,
          `processId`,
@@ -173,7 +174,7 @@ class SmartMicroprocess extends Database {
         if (Config::instance()->getValue("self_signed") != null) {
             $this->selfSigned = true;
         }
-        
+
         if (Config::instance()->getValue("main_result") == null) {
             $this->resultMessage = "result";
         } else {
@@ -562,89 +563,115 @@ class SmartMicroprocess extends Database {
 
     private function sendOutputArray($service) {
         $resultParam = $this->getOuputParams($service);
-        $empty  = false;
-        $params = "";
-        foreach ($resultParam as $key => $value) {
-            if (empty($this->paramsWithValue[$value["paramName"]]) && $value["paramAllowNull"] == "no") {
-                $empty = true;
-            } else {
-            $params[$value["paramName"]] = $this->paramsWithValue[$value["paramName"]];
-         }
-      }
+        $empty       = false;
+        $params      = "";
 
-      if ($empty && $this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
-         $this->output(ResultMessage::Instance()->dataNotFound(new stdClass, array("message" => "Data Not Found")));
-      } elseif ($this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
-         $this->output(ResultMessage::Instance()->requestSuccess($params, array("message" => "Request Success")));
-      } else {
-         $this->output(ResultMessage::Instance()->formatMessage($this->microservice["process"][0]["microprocessCustomeSuccessCode"], $params, array("message" => $this->microservice["process"][0]["microprocessCustomeSuccessMessage"])));
-      }
+        $output = $this->microservice["process"]["0"]["microprocessReturn"];
 
-   }
-
-   private function checkTypeNotArray($type, $value, $data = '') {
-      if (
-         ($type == 'integer' && !ctype_digit(strval($value))) ||
-         ($type == 'string' && (string) $value !== $value) ||
-         ($type == 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) ||
-         ($type == 'url' && !filter_var($value, FILTER_VALIDATE_URL))
-      ) {
-         $this->output(ResultMessage::Instance()->requestNotMatch(array('value' => $value, 'type' => $type, 'data' => $data), array('message' => 'Data Type Not Match')));
-      }
-   }
-
-   private function checkParams($result, $obj = false) {
-      $params = array();
-      if ((array) $result === $result) {
-         foreach ($result as $key => $value) {
-
-            if ($value["paramTypeData"] == 'file') {
-               $this->uploadFile($value['paramName']);
+        if ($output == "json") {
+            foreach ($resultParam as $key => $value) {
+                if (empty($this->paramsWithValue[$value["paramName"]]) && $value["paramAllowNull"] == "no") {
+                    $empty = true;
+                } else {
+                    $params[$value["paramName"]] = $this->paramsWithValue[$value["paramName"]];
+                }
             }
-            if ($value["paramTypeData"] == "multiarray" && isset($value["microprocessInputId"])) {
-               $paramsChild = $this->getParamsChild($value["microprocessInputId"]);
 
-               foreach ($this->paramsWithValue[$value["paramName"]] as $keyDetail => $valueDetail) {
-                  foreach ($paramsChild as $keyParam => $valueParam) {
-                     if ($valueParam["paramAllowNull"] == "no" && (!isset($valueDetail[$valueParam["paramName"]]) || $valueDetail[$valueParam["paramName"]] == "")) {
-
-                        if ($this->development) {
-                           $data = array("Data Not Complete" => $valueParam, "data" => $keyDetail);
-                        } else {
-                           $data = array();
-                        }
-
-                        $this->output(ResultMessage::Instance()->dataNotComplete($data, array("message" => "Data Not Complete")));
-                     }
-                     if ($valueParam['paramAllowNull'] == 'yes' && !isset($valueDetail[$valueParam['paramName']])) {
-                        $valueDetail[$valueParam['paramName']] = '';
-                     }
-                     $this->checkTypeNotArray($valueParam['paramTypeData'], $valueDetail[$valueParam['paramName']], $valueDetail);
-                     $params_child[] = $valueDetail[$valueParam["paramName"]];
-                  }
-                  $params[] = $params_child;
-                  unset($params_child);
-               }
-            } elseif ($value["paramAllowNull"] == "no" && (empty($this->paramsWithValue[$value["paramName"]]) || (!isset($this->paramsWithValue[$value["paramName"]]) || $this->paramsWithValue[$value["paramName"]] == ""))) {
-
-               if ($this->development) {
-                  $data = array("Data Not Complete" => $value["paramName"]);
-               } else {
-                  $data = array();
-               }
-
-               $this->output(ResultMessage::Instance()->dataNotComplete($data, array("message" => "Data Not Complete")));
+            if ($empty && $this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
+                $this->output(ResultMessage::Instance()->dataNotFound(new stdClass, array("message" => "Data Not Found")));
+            } elseif ($this->microservice["process"][0]["microprocessCustomeSuccessCode"] == "") {
+                $this->output(ResultMessage::Instance()->requestSuccess($params, array("message" => "Request Success")));
             } else {
-               if ($value['paramAllowNull'] == 'yes' && isset($this->paramsWithValue[$value['paramName']])) {
-                  $paramsWithValue = $this->paramsWithValue[$value['paramName']];
-               } elseif ($value['paramAllowNull'] == 'no') {
-                  $paramsWithValue = $this->paramsWithValue[$value['paramName']];
-               } else {
-                  /*
-                  set default value
-                   */
-                  if ($value['paramTypeData'] == "integer") {
-                     $paramsWithValue = 0;
+                $this->output(ResultMessage::Instance()->formatMessage($this->microservice["process"][0]["microprocessCustomeSuccessCode"], $params, array("message" => $this->microservice["process"][0]["microprocessCustomeSuccessMessage"])));
+            }
+        } else {
+            
+            $outputString = "";
+            foreach ($resultParam as $key => $value) {
+                if (empty($this->paramsWithValue[$value["paramName"]]) && $value["paramAllowNull"] == "no") {
+                    $empty = true;
+                } else {
+                    if ($this->paramsWithValue[$value["paramName"]] === (array) $this->paramsWithValue[$value["paramName"]]) {
+                        $outputString .= json_encode($this->paramsWithValue[$value["paramName"]]);
+                    } else {
+                        $outputString .= $this->paramsWithValue[$value["paramName"]];
+                    }
+                }
+            }
+            $this->destruct = false;
+            $debugString = "";
+            if ($this->development) {
+                $this->processList[]         = array("process" => "Final", "params" => $this->paramsWithValue, "benchmark" => $this->getBenchmark(), "database", SysLog::getInstance()->getLog("database"));
+                $debugString = json_encode($this->processList);
+            };
+            die($outputString."<br /><div>".$debugString."</div>");
+        }
+
+    }
+
+    private function checkTypeNotArray($type, $value, $data = '') {
+        if (
+            ($type == 'integer' && !ctype_digit(strval($value))) ||
+            ($type == 'string' && (string) $value !== $value) ||
+            ($type == 'email' && !filter_var($value, FILTER_VALIDATE_EMAIL)) ||
+            ($type == 'url' && !filter_var($value, FILTER_VALIDATE_URL))
+        ) {
+            $this->output(ResultMessage::Instance()->requestNotMatch(array('value' => $value, 'type' => $type, 'data' => $data), array('message' => 'Data Type Not Match')));
+        }
+    }
+
+    private function checkParams($result, $obj = false) {
+        $params = array();
+        if ((array) $result === $result) {
+            foreach ($result as $key => $value) {
+
+                if ($value["paramTypeData"] == 'file') {
+                    $this->uploadFile($value['paramName']);
+                }
+                if ($value["paramTypeData"] == "multiarray" && isset($value["microprocessInputId"])) {
+                    $paramsChild = $this->getParamsChild($value["microprocessInputId"]);
+
+                    foreach ($this->paramsWithValue[$value["paramName"]] as $keyDetail => $valueDetail) {
+                        foreach ($paramsChild as $keyParam => $valueParam) {
+                            if ($valueParam["paramAllowNull"] == "no" && (!isset($valueDetail[$valueParam["paramName"]]) || $valueDetail[$valueParam["paramName"]] == "")) {
+
+                                if ($this->development) {
+                                    $data = array("Data Not Complete" => $valueParam, "data" => $keyDetail);
+                                } else {
+                                    $data = array();
+                                }
+
+                                $this->output(ResultMessage::Instance()->dataNotComplete($data, array("message" => "Data Not Complete")));
+                            }
+                            if ($valueParam['paramAllowNull'] == 'yes' && !isset($valueDetail[$valueParam['paramName']])) {
+                                $valueDetail[$valueParam['paramName']] = '';
+                            }
+                            $this->checkTypeNotArray($valueParam['paramTypeData'], $valueDetail[$valueParam['paramName']], $valueDetail);
+                            $params_child[] = $valueDetail[$valueParam["paramName"]];
+                        }
+                        $params[] = $params_child;
+                        unset($params_child);
+                    }
+                } elseif ($value["paramAllowNull"] == "no" && (empty($this->paramsWithValue[$value["paramName"]]) || (!isset($this->paramsWithValue[$value["paramName"]]) || $this->paramsWithValue[$value["paramName"]] == ""))) {
+
+                    if ($this->development) {
+                        $data = array("Data Not Complete" => $value["paramName"]);
+                    } else {
+                        $data = array();
+                    }
+
+                    $this->output(ResultMessage::Instance()->dataNotComplete($data, array("message" => "Data Not Complete")));
+                } else {
+                    if ($value['paramAllowNull'] == 'yes' && isset($this->paramsWithValue[$value['paramName']])) {
+                        $paramsWithValue = $this->paramsWithValue[$value['paramName']];
+                    } elseif ($value['paramAllowNull'] == 'no') {
+                        $paramsWithValue = $this->paramsWithValue[$value['paramName']];
+                    } else {
+                        /*
+                        set default value
+                         */
+                        if ($value['paramTypeData'] == "integer") {
+                            $paramsWithValue = 0;
                         } else {
                             $paramsWithValue = '';
                         }
@@ -986,8 +1013,8 @@ class SmartMicroprocess extends Database {
             }
         }
         if ($this->destruct) {
-            if(empty($this->resultData)){
-               $this->resultData = ResultMessage::instance()->SystemError(new stdClass, array("message"=>"System Problem Please Contact Administrator"));
+            if (empty($this->resultData)) {
+                $this->resultData = ResultMessage::instance()->SystemError(new stdClass, array("message" => "System Problem Please Contact Administrator"));
             }
             echo json_encode(array($this->resultMessage => $this->resultData));
         }
