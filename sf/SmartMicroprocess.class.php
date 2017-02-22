@@ -133,15 +133,16 @@ class SmartMicroprocess extends Database {
       ";
 
         $this->mSqlQueries["check_service_access"] = "
-      SELECT
-         microprocessAccess,
-         microprocessMicroprocessId
-      FROM
-         sf_microprocess
-         LEFT JOIN sf_microprocess_group
-            ON microprocessMicroprocessId = microprocessId AND microprocessGroupId = '%s'
-      WHERE microprocessCode = '%s'
-      ";
+        SELECT
+            microprocessAccess,
+            microprocessMicroprocessId
+          FROM
+            sf_microprocess
+            JOIN sf_microprocess_group
+              ON microprocessMicroprocessId = microprocessId 
+            JOIN `sf_user_group` ON `userGroupGroupId` = `microprocessGroupId` AND `userId` = '%s'
+          WHERE microprocessCode = '%s'
+        ";
 
         $this->mSqlQueries["add_log"] = "
       INSERT INTO
@@ -321,11 +322,10 @@ class SmartMicroprocess extends Database {
 
     private function setDefaultUser() {
         $this->paramsWithValue["systemUserId"]  = $_SESSION["user"]["userId"];
-        $this->paramsWithValue["systemGroupId"] = $_SESSION["user"]["groupId"];
     }
 
     private function checkAccessService($service) {
-        $result = $this->Open($this->mSqlQueries['check_service_access'], array($_SESSION["user"]["groupId"], $service));
+        $result = $this->Open($this->mSqlQueries['check_service_access'], array($_SESSION["user"]["userId"], $service));
         if (!empty($result) && $result["0"]["microprocessAccess"] == "Excluesive" && $result["0"]["microprocessMicroprocessId"] == "") {
             if (isset($_SESSION['is_login'])) {
                 $this->output(ResultMessage::Instance()->forbiddenAccess(new stdClass, array("message" => "Forbidden Access")));
@@ -525,7 +525,9 @@ class SmartMicroprocess extends Database {
             $this->startTrans();
 
             if (empty($this->microservice["process"])) {
-                $this->output(ResultMessage::Instance()->dataNotFound(array("process_not_found" => $service)), array("message" => "Process Not Found"));
+                $debug = SysLog::getInstance()->getLog("database");
+                
+                $this->output(ResultMessage::Instance()->dataNotFound(array("process_not_found" => $service, "debug"=>$debug)), array("message" => "Process Not Found"));
             };
 
             if ($this->microservice["process"][0]["microprocessStatus"] == "sanbox") {
@@ -585,7 +587,7 @@ class SmartMicroprocess extends Database {
                 $this->output(ResultMessage::Instance()->formatMessage($this->microservice["process"][0]["microprocessCustomeSuccessCode"], $params, array("message" => $this->microservice["process"][0]["microprocessCustomeSuccessMessage"])));
             }
         } else {
-            
+
             $outputString = "";
             foreach ($resultParam as $key => $value) {
                 if (empty($this->paramsWithValue[$value["paramName"]]) && $value["paramAllowNull"] == "no") {
@@ -599,12 +601,12 @@ class SmartMicroprocess extends Database {
                 }
             }
             $this->destruct = false;
-            $debugString = "";
+            $debugString    = "";
             if ($this->development) {
-                $this->processList[]         = array("process" => "Final", "params" => $this->paramsWithValue, "benchmark" => $this->getBenchmark(), "database", SysLog::getInstance()->getLog("database"));
-                $debugString = "<br /><div>".json_encode($this->processList)."</div>";
+                $this->processList[] = array("process" => "Final", "params" => $this->paramsWithValue, "benchmark" => $this->getBenchmark(), "database", SysLog::getInstance()->getLog("database"));
+                $debugString         = "<br /><div>" . json_encode($this->processList) . "</div>";
             };
-            die($outputString.$debugString);
+            die($outputString . $debugString);
         }
 
     }

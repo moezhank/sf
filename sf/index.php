@@ -209,7 +209,11 @@ class SysLog {
       $this->log[$nama][] = $value;
    }
    public function getLog($nama) {
-      return $this->log[$nama];
+      if(isset($this->log[$nama])){
+         return $this->log[$nama];
+      }else{
+         return "";
+      }
    }
    public function getAllLog() {
       return $this->log;
@@ -450,16 +454,18 @@ class Security extends Database {
          a.`userName`,
          a.`realName`,
          a.`pwdUser`,
-         b.`groupId`,
-         b.`groupName`
+         c.`groupId`,
+         c.`groupName`
       FROM
          `sf_user` a
+      JOIN 
+         `sf_user_group` b ON `userGroupUserId` = `userId` AND `userName` = '%s' AND `status` = 'active'
       JOIN
-         `sf_group` b ON a.groupId = b.groupId
-      WHERE
-         `userName` = '%s'
-      AND
-        status = 'active';
+         `sf_group` c ON c.groupId = b.userGroupGroupId
+      JOIN
+         `sf_unit_application` ON `unitApplicationUnitId` = `groupUnitId`
+      JOIN
+         `sf_application` ON `unitApplicationId` = `applicationId` AND `applicationCode` = '%s'
    ";
 
       $this->mSqlQueries['get_module_action'] = "
@@ -478,31 +484,24 @@ class Security extends Database {
          a.groupId = '%s'
     ";
 
-      $this->mSqlQueries["check_user"] = "
-      SELECT
-         *
-      FROM
-         `sf_user`
-      WHERE
-        userName = '%s'
-      AND
-        status = 'active'
-      ";
-
       $this->mSqlQueries["check_user_by_session_id"] = "
          SELECT
             a.`userId`,
             a.`userName`,
             a.`realName`,
             a.`pwdUser`,
-            b.`groupId`,
-            b.`groupName`
+            c.`groupId`,
+            c.`groupName`
          FROM
             `sf_user` a
+         JOIN 
+            `sf_user_group` b ON `userGroupUserId` = `userId` AND `loginKey` = '%s' AND `status` = 'active'
          JOIN
-            `sf_group` b ON a.groupId = b.groupId
-         WHERE
-            loginKey = '%s'
+            `sf_group` c ON c.groupId = b.userGroupGroupId
+         JOIN
+            `sf_unit_application` ON `unitApplicationUnitId` = `groupUnitId`
+         JOIN
+            `sf_application` ON `unitApplicationId` = `applicationId` AND `applicationCode` = '%s'
       ";
 
       $this->mSqlQueries["update_login_key"] = "
@@ -524,7 +523,7 @@ class Security extends Database {
       if (isset($_SESSION["is_login"]) && is_null($_SESSION["is_login"])) {
          //print_r($_SESSION);
          $cookie = isset($_COOKIE[Config::instance()->getValue('session_name')]) ? $_COOKIE[Config::instance()->getValue('session_name')] : "no-cookie";
-         $result = $this->open($this->mSqlQueries['check_user_by_session_id'], array($cookie));
+         $result = $this->open($this->mSqlQueries['check_user_by_session_id'], array($cookie, Config::instance()->getValue('application_code')));
 
          if (!empty($result)) {
             Session::instance()->restart();
@@ -551,7 +550,7 @@ class Security extends Database {
    }
 
    public function getUser($user) {
-      return $this->open($this->mSqlQueries['get_user_info'], array($user));
+      return $this->open($this->mSqlQueries['get_user_info'], array($user, Config::instance()->getValue('application_code')));
    }
 
    public function checkLogin($user, $pass, $hash = false) {
