@@ -9,6 +9,7 @@ $cfg['dbport'] = "3306";
 //Application Configuration
 $cfg['project_name'] = "Simple Framework";
 $cfg['copyright'] = "WebAppId";
+$cfg['application_code'] = "WAI";
 $cfg['application_code'] = "WebAppId";
 $cfg['application_version'] = "4.0";
 $cfg['application_title'] = "News Feed";
@@ -36,18 +37,30 @@ $cfg['itemViewed'] = 20;
 // SYSTEM
 $cfg['basedir'] = str_replace(basename($_SERVER['SCRIPT_NAME']), "", $_SERVER['SCRIPT_NAME']);
 
+$cfg['main_result'] = 'result';
+
 //============== account =============================
 // general
 $cfg['account_default_group'] = 5;
 // linked account autoregister
-$cfg['account_autoregister']  = TRUE;
+$cfg['account_autoregister']  = true;
 // linked account facebook
-$cfg['facebook_app_id'] = '1547817185539558';
-$cfg['facebook_app_secret'] = 'b947a3f6436d86f0a6c68cdbfd3e1607';
+$cfg['facebook_app_id'] = '';
+$cfg['facebook_app_secret'] = '';
 // linked account google
 $cfg['google_client_id'] = '';
 $cfg['google_client_secret'] = '';
 // linked account twitter
 $cfg['twitter_consumer_key'] = '';
 $cfg['twitter_consumer_secret'] = '';
+
+$cfg['upload_path'] = './upload/';
+
+$cfg['email_smtp']        = 'smtp.gmail.com';
+$cfg['email_account']     = '@gmail.com';
+$cfg['email_password']    = '';
+$cfg['email_smtp_port']   = '587';
+$cfg['email_secure_type'] = 'tls';
+
+
 ?>
