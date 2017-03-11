@@ -113,7 +113,7 @@ class SmartMicroprocess extends Database {
          JOIN `sf_microprocess_ref_param`
             ON `microprocessInputParamId` = `paramId`
       WHERE `microprocessInputProcessId` = '%s'
-      AND microprocessInputParamParentId IS NULL
+      AND IFNULL(microprocessInputParamParentId, 0) = 0
       ORDER BY microprocessInputParamOrder ASC
       ";
 
