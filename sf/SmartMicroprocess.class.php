@@ -745,7 +745,7 @@ class SmartMicroprocess extends Database {
                     $message = array("message" => $data["microprocessProcessFalseMessage"]);
                     $this->output(ResultMessage::Instance()->formatMessage($data["microprocessProcessFalseCode"], $result, array("message" => $data["microprocessProcessFalseMessage"])));
                 } else {
-                    $this->output(ResultMessage::Instance()->dataNotFound());
+                    $this->output(ResultMessage::Instance()->dataNotFound(array($resultKey=>array())));
                 }
             }
 

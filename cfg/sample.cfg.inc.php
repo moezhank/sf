@@ -9,7 +9,6 @@ $cfg['dbport'] = "3306";
 //Application Configuration
 $cfg['project_name'] = "Simple Framework";
 $cfg['copyright'] = "WebAppId";
-$cfg['application_code'] = "WAI";
 $cfg['application_code'] = "WebAppId";
 $cfg['application_version'] = "4.0";
 $cfg['application_title'] = "News Feed";
