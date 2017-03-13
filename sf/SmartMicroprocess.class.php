@@ -138,9 +138,9 @@ class SmartMicroprocess extends Database {
             microprocessMicroprocessId
           FROM
             sf_microprocess
-            JOIN sf_microprocess_group
+            LEFT JOIN sf_microprocess_group
               ON microprocessMicroprocessId = microprocessId 
-            JOIN `sf_user_group` ON `userGroupGroupId` = `microprocessGroupId` AND `userId` = '%s'
+            LEFT JOIN `sf_user_group` ON `userGroupGroupId` = `microprocessGroupId` AND `userGroupUserId` = '%s'
           WHERE microprocessCode = '%s'
         ";
 
