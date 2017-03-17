@@ -1007,6 +1007,8 @@ class SmartMicroprocess extends Database {
         };
         if (isset($this->dataTables["draw"])) {
             $this->resultData["draw"] = $this->dataTables["draw"];
+            $this->resultData["recordsTotal"] = 0;
+            $this->resultData["recordsFiltered"] = 0;
             if (isset($this->paramsWithValue["recordsTotal"])) {
                 $this->resultData["recordsTotal"] = $this->paramsWithValue["recordsTotal"];
             }
