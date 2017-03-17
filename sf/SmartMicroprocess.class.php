@@ -135,7 +135,7 @@ class SmartMicroprocess extends Database {
         $this->mSqlQueries["check_service_access"] = "
         SELECT
             microprocessAccess,
-            microprocessMicroprocessId
+            userGroupGroupId
           FROM
             sf_microprocess
             LEFT JOIN sf_microprocess_group
@@ -326,7 +326,7 @@ class SmartMicroprocess extends Database {
 
     private function checkAccessService($service) {
         $result = $this->Open($this->mSqlQueries['check_service_access'], array($_SESSION["user"]["userId"], $service));
-        if (!empty($result) && $result["0"]["microprocessAccess"] == "Excluesive" && $result["0"]["microprocessMicroprocessId"] == "") {
+        if (!empty($result) && $result["0"]["microprocessAccess"] == "Excluesive" && $result["0"]["userGroupGroupId"] == "") {
             if (isset($_SESSION['is_login'])) {
                 $this->output(ResultMessage::Instance()->forbiddenAccess(new stdClass, array("message" => "Forbidden Access")));
             } else {
