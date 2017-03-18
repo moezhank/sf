@@ -45,6 +45,7 @@ class SmartMicroprocess extends Database {
          `processDesc`,
          `processProcess`,
          `processMethod`,
+         `paramAllowNull`,
          `paramName` AS `processResult`,
          `paramTypeData` AS `processTypeOutput`,
          `microprocessProcessJoin`,
@@ -139,7 +140,7 @@ class SmartMicroprocess extends Database {
           FROM
             sf_microprocess
             LEFT JOIN sf_microprocess_group
-              ON microprocessMicroprocessId = microprocessId 
+              ON microprocessMicroprocessId = microprocessId
             LEFT JOIN `sf_user_group` ON `userGroupGroupId` = `microprocessGroupId` AND `userGroupUserId` = '%s'
           WHERE microprocessCode = '%s'
         ";
@@ -321,7 +322,7 @@ class SmartMicroprocess extends Database {
     }
 
     private function setDefaultUser() {
-        $this->paramsWithValue["systemUserId"]  = $_SESSION["user"]["userId"];
+        $this->paramsWithValue["systemUserId"] = $_SESSION["user"]["userId"];
     }
 
     private function checkAccessService($service) {
@@ -526,8 +527,8 @@ class SmartMicroprocess extends Database {
 
             if (empty($this->microservice["process"])) {
                 $debug = SysLog::getInstance()->getLog("database");
-                
-                $this->output(ResultMessage::Instance()->dataNotFound(array("process_not_found" => $service, "debug"=>$debug)), array("message" => "Process Not Found"));
+
+                $this->output(ResultMessage::Instance()->dataNotFound(array("process_not_found" => $service, "debug" => $debug)), array("message" => "Process Not Found"));
             };
 
             if ($this->microservice["process"][0]["microprocessStatus"] == "sanbox") {
@@ -739,13 +740,13 @@ class SmartMicroprocess extends Database {
             $resultKey  = $data["processResult"];
             $joinKey    = $data["keyCode"];
 
-            if (empty($result)) {
+            if (empty($result) && $data['paramAllowNull'] === 'no') {
                 $message = array();
                 if ($data["microprocessProcessFalseMessage"] != "") {
                     $message = array("message" => $data["microprocessProcessFalseMessage"]);
                     $this->output(ResultMessage::Instance()->formatMessage($data["microprocessProcessFalseCode"], $result, array("message" => $data["microprocessProcessFalseMessage"])));
                 } else {
-                    $this->output(ResultMessage::Instance()->dataNotFound(array($resultKey=>array())));
+                    $this->output(ResultMessage::Instance()->dataNotFound(array($resultKey => array())));
                 }
             }
 
@@ -755,34 +756,50 @@ class SmartMicroprocess extends Database {
             } elseif (!empty($prosesJoin)) {
                 switch ($prosesJoin) {
                 case 'child':
-                    $this->paramsWithValue[$joinKey] = $this->childJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign']);
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
+                        $this->paramsWithValue[$joinKey] = $this->childJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign']);
+                    }
                     break;
                 case 'right_child':
-                    $this->paramsWithValue[$joinKey] = $this->childJoin($result, $this->paramsWithValue[$joinKey], $resultKey, $data['keyForeign'], $data['keyField']);
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
+                        $this->paramsWithValue[$joinKey] = $this->childJoin($result, $this->paramsWithValue[$joinKey], $resultKey, $data['keyForeign'], $data['keyField']);
+                    }
                     break;
                 case 'left':
-                    $this->paramsWithValue[$joinKey] = $this->sideJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign']);
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
+                        $this->paramsWithValue[$joinKey] = $this->sideJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign']);
+                    }
                     break;
                 case 'right':
-                    $this->paramsWithValue[$joinKey] = $this->sideJoin($result, $this->paramsWithValue[$joinKey], $resultKey, $data['keyForeign'], $data['keyField']);
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
+                        $this->paramsWithValue[$joinKey] = $this->sideJoin($result, $this->paramsWithValue[$joinKey], $resultKey, $data['keyForeign'], $data['keyField']);
+                    }
                     break;
                 case 'outer':
-                    $source                            = $this->paramsWithValue[$joinKey];
-                    $this->paramsWithValue[$joinKey]   = $this->outerJoin($source, $result, $resultKey, $data['keyField'], $data['keyForeign'], 'left');
-                    $this->paramsWithValue[$resultKey] = $this->outerJoin($source, $result, $resultKey, $data['keyField'], $data['keyForeign'], 'right');
-                    unset($source);
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
+                        $source                            = $this->paramsWithValue[$joinKey];
+                        $this->paramsWithValue[$joinKey]   = $this->outerJoin($source, $result, $resultKey, $data['keyField'], $data['keyForeign'], 'left');
+                        $this->paramsWithValue[$resultKey] = $this->outerJoin($source, $result, $resultKey, $data['keyField'], $data['keyForeign'], 'right');
+                        unset($source);
+                    }
                     break;
                 case 'leftouter':
-                    $this->paramsWithValue[$joinKey]   = $this->outerJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign'], 'left');
-                    $this->paramsWithValue[$resultKey] = '';
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
+                        $this->paramsWithValue[$joinKey]   = $this->outerJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign'], 'left');
+                        $this->paramsWithValue[$resultKey] = '';
+                    }
                     break;
                 case 'rightouter':
-                    $this->paramsWithValue[$resultKey] = $this->outerJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign'], 'right');
-                    $this->paramsWithValue[$joinKey]   = '';
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
+                        $this->paramsWithValue[$resultKey] = $this->outerJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign'], 'right');
+                        $this->paramsWithValue[$joinKey]   = '';
+                    }
                     break;
                 default:
+                    if (!empty($result) && !empty($this->paramsWithValue[$joinKey])) {
 // TODO : Error message join process unavailable.
-                    $this->paramsWithValue[$joinKey] = $this->innerJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign']);
+                        $this->paramsWithValue[$joinKey] = $this->innerJoin($this->paramsWithValue[$joinKey], $result, $resultKey, $data['keyField'], $data['keyForeign']);
+                    }
                     break;
                 }
             } elseif ($typeOutput == "array" && !empty($result)) {
@@ -1006,8 +1023,8 @@ class SmartMicroprocess extends Database {
             $this->resultData["process"] = $this->processList;
         };
         if (isset($this->dataTables["draw"])) {
-            $this->resultData["draw"] = $this->dataTables["draw"];
-            $this->resultData["recordsTotal"] = 0;
+            $this->resultData["draw"]            = $this->dataTables["draw"];
+            $this->resultData["recordsTotal"]    = 0;
             $this->resultData["recordsFiltered"] = 0;
             if (isset($this->paramsWithValue["recordsTotal"])) {
                 $this->resultData["recordsTotal"] = $this->paramsWithValue["recordsTotal"];
